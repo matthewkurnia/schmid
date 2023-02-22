@@ -51,6 +51,7 @@ shader_param/angular_velocity = null
 code = "shader_type particles;
 render_mode keep_data;
 
+uniform float velocity_cutoff: hint_range(0.0, 1.0, 0.01) = 0.2;
 uniform int amount;
 uniform float scale = 1.0;
 uniform float scale_random_amount;
@@ -139,7 +140,10 @@ void vertex() {
 	if (displacement > 80.0 * (0.5 + 0.5 * rand_from_seed(alt_seed))) {
 		CUSTOM.w = 0.0;
 	}
-	CUSTOM.w -= 0.01 * (1.0 + rand_from_seed(alt_seed));
+	if (length(stroke_velocity) < velocity_cutoff) {
+		CUSTOM.w -= 0.02 * (1.0 + rand_from_seed(alt_seed));
+	}
+	CUSTOM.w -= 0.005 * (1.0 + rand_from_seed(alt_seed));
 }
 "
 
@@ -165,6 +169,7 @@ viewport_path = NodePath("Compositor/Base")
 [sub_resource type="ShaderMaterial" id=7]
 resource_local_to_scene = true
 shader = SubResource( 4 )
+shader_param/velocity_cutoff = 0.1
 shader_param/amount = 1085.0
 shader_param/scale = 0.1
 shader_param/scale_random_amount = null
