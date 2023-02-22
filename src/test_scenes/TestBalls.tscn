@@ -94,6 +94,5 @@ current = true
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="CameraPivot"]
 autoplay = "CameraRotation"
-playback_speed = 2.0
 anims/CameraRotation = SubResource( 9 )
 anims/RESET = SubResource( 10 )
