@@ -14,6 +14,10 @@ onready var cameras := [
 	$Base/Camera,
 	$DepthMotion/Camera
 ]
+onready var viewports := [
+	depth_motion,
+	base
+]
 
 
 func _ready():
@@ -22,7 +26,6 @@ func _ready():
 	var scene = SCENES[selected_scene_index].instance()
 	self.add_child(scene)
 	scene_camera = scene.get_viewport().get_camera()
-	pass
 
 
 func _process(delta):
@@ -31,8 +34,8 @@ func _process(delta):
 
 
 func update_viewport_sizes():
-	depth_motion.size = self.rect_size
-	base.size = self.rect_size
+	for viewport in viewports:
+		viewport.size = self.rect_size
 
 
 func on_resized():
