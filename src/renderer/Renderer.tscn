@@ -65,21 +65,24 @@ code = "shader_type canvas_item;
 
 uniform bool debug_view = false;
 
+uniform float screen_height: hint_range(0.0, 2000.0, 1.0) = 600.0;
+uniform float screen_width: hint_range(0.0, 2000.0, 1.0) = 1024.0;
+
 uniform float canvas_roughness;
 uniform sampler2D canvas_texture;
 
 uniform float pigmentation: hint_range(0.0, 1.0, 0.1) = 0.0;
+uniform float smudge_amount: hint_range(0.0, 1.0, 0.1) = 0.5;
 uniform float distorsion_amount: hint_range(0.0, 0.01, 0.0001) = 0.004;
 uniform float minimum_distorsion_multiplier: hint_range(0.0, 1.0, 0.01) = 0.5;
 uniform int respawn_blend_frames: hint_range(2, 200, 1) = 4;
-
-uniform float stroke_1_sample_offset: hint_range(0.0, 0.5, 0.01) = 0.3;
 
 uniform sampler2D source;
 uniform sampler2D depth_motion;
 uniform sampler2D stroke_1;
 
 const float PI = 3.14159;
+const float STROKE_BIAS[] = {0.3};
 
 float grainify(float x, float a) {
 	x -= 0.5;
@@ -112,7 +115,30 @@ void fragment() {
 	
 	// Sample from source
 	vec3 source_color = texture(source, SCREEN_UV + distorsion_amount * distorsion_multiplier * vec2(cos(2.0 * PI * angle), sin(2.0 * PI * angle))).rgb;
-	vec3 pigment_color = texture(source, uv).rgb;
+	
+	// Sample from source with opaque stroke
+	mat2 rotation;
+	rotation[0] = vec2(cos(angle), -sin(angle));
+	rotation[1] = vec2(sin(angle), cos(angle));
+	float ratio = screen_height / screen_width;
+	vec3 pigment_color;
+	vec3 upper_color = texture(
+		source,
+		uv + rotation * vec2(0.0, 0.5 * STROKE_BIAS[0]) * vec2(ratio, 1.0) * scale
+	).rgb;
+	vec3 lower_color = texture(
+		source,
+		uv + rotation * vec2(0.0, -0.5 * STROKE_BIAS[0]) * vec2(ratio, 1.0) * scale
+	).rgb;
+	vec3 core_color = texture(source, uv).rgb;
+	if (UV.y <= 0.5) {
+		pigment_color = mix(upper_color, core_color, UV.y * 2.0);
+	} else {
+		pigment_color = mix(core_color, lower_color, (UV.y - 0.5) * 2.0);
+	}
+	pigment_color = mix(pigment_color, core_color, (1.0 - smudge_amount));
+	
+	// Combine the two samples
 	COLOR.rgb = mix(source_color, pigment_color, pigmentation);
 	
 	// Handle alpha
@@ -122,6 +148,7 @@ void fragment() {
 	if (debug_view) {
 //		COLOR.rgb = vec3(0);
 		COLOR.rgb = vec3(depth);
+		COLOR.rgb = vec3(scale);
 	}
 }
 "
@@ -136,12 +163,14 @@ viewport_path = NodePath("Compositor/Base")
 resource_local_to_scene = true
 shader = SubResource( 13 )
 shader_param/debug_view = false
-shader_param/canvas_roughness = 20.0
+shader_param/screen_height = 600.0
+shader_param/screen_width = 1024.0
+shader_param/canvas_roughness = 10.0
 shader_param/pigmentation = 0.0
+shader_param/smudge_amount = 0.5
 shader_param/distorsion_amount = 0.004
-shader_param/minimum_distorsion_multiplier = 0.05
+shader_param/minimum_distorsion_multiplier = 0.4
 shader_param/respawn_blend_frames = 32
-shader_param/stroke_1_sample_offset = 0.3
 shader_param/canvas_texture = ExtResource( 6 )
 shader_param/source = SubResource( 15 )
 shader_param/depth_motion = SubResource( 30 )
@@ -344,7 +373,7 @@ uniform float bleed_amount: hint_range(0.0, 10.0, 0.1) = 3.0;
 
 // distorsion
 uniform sampler2D noise;
-uniform float distorsion_amount: hint_range(0.0, 0.1) = 0.05;
+uniform float distorsion_amount: hint_range(0.0, 0.1, 0.0001) = 0.05;
 
 
 float trig_interpolate(float x, float a, float b) {
@@ -477,7 +506,7 @@ shader_param/shadow_fringe_amount = 0.5
 shader_param/watercolor_mode = true
 shader_param/value_based_bleed = true
 shader_param/bleed_amount = 10.0
-shader_param/distorsion_amount = 0.001
+shader_param/distorsion_amount = 0.0005
 shader_param/noise = SubResource( 27 )
 
 [sub_resource type="Shader" id=19]
