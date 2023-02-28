@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=2]
+[gd_scene load_steps=27 format=2]
 
 [ext_resource path="res://src/renderer/Compositor.gd" type="Script" id=1]
 [ext_resource path="res://src/renderer/MotionTracker.gd" type="Script" id=2]
@@ -6,6 +6,7 @@
 [ext_resource path="res://src/renderer/Strokes.tscn" type="PackedScene" id=4]
 [ext_resource path="res://assets/strokes/dry_1.png" type="Texture" id=5]
 [ext_resource path="res://assets/canvas_texture.png" type="Texture" id=6]
+[ext_resource path="res://assets/paper_texture.png" type="Texture" id=7]
 
 [sub_resource type="QuadMesh" id=1]
 
@@ -60,6 +61,8 @@ uniform sampler2D canvas_texture;
 
 uniform float pigmentation: hint_range(0.0, 1.0, 0.1) = 0.0;
 uniform int respawn_blend_frames: hint_range(2, 200, 1) = 4;
+uniform float jitter_amount: hint_range(0.0, 1.0, 0.01) = 0.1;
+
 uniform float stroke_1_sample_offset: hint_range(0.0, 0.5, 0.01) = 0.3;
 uniform sampler2D source;
 uniform sampler2D stroke_1;
@@ -70,6 +73,10 @@ float grainify(float x, float a) {
 	x -= 0.5;
 	a -= 0.5;
 	return max(min(canvas_roughness * (x + a) + 0.5, 1.0), 0.0);
+}
+
+vec3 hue_jitter(vec3 c) {
+	return vec3(0);
 }
 
 void fragment() {
@@ -107,6 +114,7 @@ shader = SubResource( 13 )
 shader_param/canvas_roughness = 20.0
 shader_param/pigmentation = 0.0
 shader_param/respawn_blend_frames = 32
+shader_param/jitter_amount = 0.1
 shader_param/stroke_1_sample_offset = 0.3
 shader_param/canvas_texture = ExtResource( 6 )
 shader_param/source = SubResource( 15 )
@@ -285,16 +293,17 @@ uniform float screen_width = 1024;
 uniform float screen_height = 600;
 
 // value grouping
-uniform float highlight_threshold: hint_range(0.0, 1.0) = 0.9;
-uniform float highlight_fade_distance: hint_range(0.0, 0.2) = 0.05;
-uniform float highlight_lod: hint_range(0.0, 10.0, 0.5) = 2.0;
-uniform vec4 highlight_bias: hint_color;
 uniform float shadow_threshold: hint_range(0.0, 1.0) = 0.2;
 uniform float shadow_fade_distance: hint_range(0.0, 0.2) = 0.05;
 uniform float shadow_lod: hint_range(0.0, 10.0, 0.5) = 4.0;
 uniform float shadow_cutoff: hint_range(0.0, 1.0) = 0.2;
 uniform vec4 shadow_fringe_bias: hint_color;
 uniform float shadow_fringe_amount: hint_range(0.0, 1.0) = 0.5;
+
+// watercolor effects
+uniform bool watercolor_mode = true;
+uniform bool value_based_bleed = true;
+uniform float bleed_amount: hint_range(0.0, 10.0, 0.1) = 3.0;
 
 // distorsion
 uniform sampler2D noise;
@@ -385,7 +394,8 @@ vec3 set_lum(vec3 c, float l) {
 void fragment() {
 	vec2 offset = texture(noise, UV).xy;
 	offset = 2.0 * offset - vec2(1);
-	vec2 uv_with_offset = (vec2(0, 1) + UV * vec2(1, -1)) + distorsion_amount * offset;
+	vec2 uv = vec2(0, 1) + UV * vec2(1, -1);
+	vec2 uv_with_offset = uv + distorsion_amount * offset;
 	
 	// value grouping
 	vec4 raw_color = texture(SCREEN_TEXTURE, uv_with_offset);
@@ -395,31 +405,18 @@ void fragment() {
 		shadow_threshold - shadow_fade_distance,
 		shadow_threshold + shadow_fade_distance
 	);
-	float ratio = screen_height / screen_width;
-	float f_buffer_width = float(buffer_width);
-	vec2 pixelated_uv = floor(uv_with_offset * f_buffer_width * vec2(1.0, ratio)) / (f_buffer_width * vec2(1.0, ratio));
-	vec3 blurred_color = mix(
-		mix(
-			texture(SCREEN_TEXTURE, pixelated_uv),
-			texture(SCREEN_TEXTURE, pixelated_uv + vec2(sign(SCREEN_UV.x - pixelated_uv.x) / f_buffer_width, 0)),
-			bezier_interpolate(B0, B1, B2, B3, abs(SCREEN_UV.x - pixelated_uv.x) * f_buffer_width).y
-		),
-		mix(
-			texture(SCREEN_TEXTURE, pixelated_uv + vec2(0.0, sign(SCREEN_UV.y - pixelated_uv.y) / (f_buffer_width * ratio))),
-			texture(SCREEN_TEXTURE, pixelated_uv + vec2(sign(SCREEN_UV.x - pixelated_uv.x) / f_buffer_width, sign(SCREEN_UV.y - pixelated_uv.y) / (f_buffer_width * ratio))),
-			bezier_interpolate(B0, B1, B2, B3, abs(SCREEN_UV.x - pixelated_uv.x) * f_buffer_width).y
-		),
-		bezier_interpolate(B0, B1, B2, B3, (SCREEN_UV.y - pixelated_uv.y) * f_buffer_width * ratio).y
-	).rgb;
-	float blurred_value = lum(blurred_color);
-//	blurred_color = set_lum(blurred_color, min(blurred_value, shadow_threshold - shadow_fade_distance));
-	blurred_color = set_lum(blurred_color, max(raw_value, shadow_cutoff));
-	blurred_color = min(blurred_color, shadow_fringe_bias.rgb);
 	
-	COLOR.rgb = mix(raw_color.rgb, blurred_color, shadow);
+	vec2 uv_with_bleed = watercolor_mode ? SCREEN_UV + offset * 0.005 : uv_with_offset;
+	vec3 blurred_color = textureLod(SCREEN_TEXTURE, uv_with_bleed, bleed_amount * raw_value).rgb;
 	
-	float sat = sat(raw_color.rgb);
-	COLOR.rgb = set_lum(set_sat(COLOR.rgb, sat), lum(COLOR.rgb));
+	if (!watercolor_mode) {
+		blurred_color = set_lum(blurred_color, max(raw_value, shadow_cutoff));
+	//	float sat = sat(raw_color.rgb);
+	//	blurred_color = set_lum(set_sat(blurred_color, sat), max(raw_value, shadow_cutoff));
+	//	blurred_color = min(blurred_color, shadow_fringe_bias.rgb);
+	}
+	
+	COLOR.rgb = mix(raw_color.rgb, blurred_color * shadow_fringe_bias.rgb, shadow);
 }"
 
 [sub_resource type="OpenSimplexNoise" id=26]
@@ -431,19 +428,18 @@ noise = SubResource( 26 )
 
 [sub_resource type="ShaderMaterial" id=24]
 shader = SubResource( 23 )
-shader_param/buffer_width = 7
+shader_param/buffer_width = 32
 shader_param/screen_width = 1024.0
 shader_param/screen_height = 600.0
-shader_param/highlight_threshold = 0.9
-shader_param/highlight_fade_distance = 0.05
-shader_param/highlight_lod = 2.0
-shader_param/highlight_bias = null
-shader_param/shadow_threshold = 0.39
+shader_param/shadow_threshold = 0.377
 shader_param/shadow_fade_distance = 0.05
 shader_param/shadow_lod = 4.0
-shader_param/shadow_cutoff = 0.26
-shader_param/shadow_fringe_bias = Color( 0, 0, 0, 1 )
+shader_param/shadow_cutoff = 0.34
+shader_param/shadow_fringe_bias = Color( 1, 1, 1, 1 )
 shader_param/shadow_fringe_amount = 0.5
+shader_param/watercolor_mode = true
+shader_param/value_based_bleed = true
+shader_param/bleed_amount = 10.0
 shader_param/distorsion_amount = 0.001
 shader_param/noise = SubResource( 27 )
 
@@ -463,7 +459,7 @@ void fragment() {
 
 [sub_resource type="ShaderMaterial" id=20]
 shader = SubResource( 19 )
-shader_param/canvas_depth = 0.15
+shader_param/canvas_depth = 0.35
 shader_param/tint = Color( 0.27451, 0.223529, 0.223529, 1 )
 
 [node name="Renderer" type="Control"]
@@ -538,6 +534,6 @@ anchor_bottom = 1.0
 material = SubResource( 20 )
 anchor_right = 1.0
 anchor_bottom = 1.0
-texture = ExtResource( 6 )
+texture = ExtResource( 7 )
 expand = true
 stretch_mode = 7
