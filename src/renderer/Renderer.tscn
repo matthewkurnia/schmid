@@ -56,12 +56,13 @@ viewport_path = NodePath("Compositor/Base")
 [sub_resource type="Shader" id=13]
 code = "shader_type canvas_item;
 
+uniform bool debug_view = false;
+
 uniform float canvas_roughness;
 uniform sampler2D canvas_texture;
 
 uniform float pigmentation: hint_range(0.0, 1.0, 0.1) = 0.0;
 uniform int respawn_blend_frames: hint_range(2, 200, 1) = 4;
-uniform float jitter_amount: hint_range(0.0, 1.0, 0.01) = 0.1;
 
 uniform float stroke_1_sample_offset: hint_range(0.0, 0.5, 0.01) = 0.3;
 uniform sampler2D source;
@@ -102,6 +103,10 @@ void fragment() {
 	// Handle alpha
 	COLOR.a = alpha * texture(stroke_1, UV).a;
 	COLOR.a = grainify(texture(canvas_texture, SCREEN_UV).x, COLOR.a);
+	
+	if (debug_view) {
+		COLOR.rgb = vec3(0);
+	}
 }
 "
 
@@ -111,10 +116,10 @@ viewport_path = NodePath("Compositor/Base")
 [sub_resource type="ShaderMaterial" id=14]
 resource_local_to_scene = true
 shader = SubResource( 13 )
+shader_param/debug_view = false
 shader_param/canvas_roughness = 20.0
 shader_param/pigmentation = 0.0
 shader_param/respawn_blend_frames = 32
-shader_param/jitter_amount = 0.1
 shader_param/stroke_1_sample_offset = 0.3
 shader_param/canvas_texture = ExtResource( 6 )
 shader_param/source = SubResource( 15 )
@@ -125,17 +130,20 @@ code = "shader_type particles;
 render_mode keep_data;
 
 uniform int respawn_blend_frames: hint_range(2, 32, 1) = 4;
-uniform float velocity_cutoff: hint_range(0.0, 1.0, 0.01) = 0.2;
+uniform float velocity_cutoff: hint_range(0.0, 1.0) = 0.2;
+uniform float anti_clump_velocity: hint_range(0.0, 1.0) = 0.01;
 uniform int amount;
 uniform float scale = 1.0;
 uniform float scale_random_amount;
 uniform vec3 emission_box_extents;
+uniform float max_displacement_alowed = 80.0;
 
 uniform sampler2D source;
 uniform sampler2D depth_motion;
 uniform sampler2D raw_position_data;
 
 const float PI = 3.14159;
+const float EPSILON = 0.1;
 
 float rand_from_seed(inout uint seed) {
 	int k;
@@ -174,7 +182,7 @@ void vertex() {
 	uint alt_seed = hash(uint(INDEX) + RANDOM_SEED);
 	
 	vec2 normalized_position = texelFetch(raw_position_data, ivec2(INDEX, 0), 0).xy;
-	vec2 position = (normalized_position - vec2(0.5)) * 2.0 * vec2(emission_box_extents.x, emission_box_extents.y);
+	vec2 initial_position = (normalized_position - vec2(0.5)) * 2.0 * vec2(emission_box_extents.x, emission_box_extents.y);
 	float depth = texture(depth_motion, normalized_position).z;
 	
 	normalized_position = (TRANSFORM[3].xy / emission_box_extents.xy) * 0.5 + 0.5;
@@ -193,29 +201,34 @@ void vertex() {
 	// When decoding, we now multiply by 0.015625 (1/64) to reduce it to the correct size.
 	vec2 stroke_velocity = (texture(depth_motion, normalized_position).xy - vec2(0.5))
 			* 0.015625 * 2.0 * emission_box_extents.xy * vec2(1.0, -1.0);
+	if (length(stroke_velocity) < velocity_cutoff) {
+		stroke_velocity = vec2(0);
+	}
 	vec2 previous_position = TRANSFORM[3].xy;
 	TRANSFORM[3].xy += stroke_velocity;
-	float displacement = length(TRANSFORM[3].xy - position);
+	float displacement = length(TRANSFORM[3].xy - initial_position);
 	
 	// initializes the stroke
 	if (CUSTOM.w <= 0.5 && CUSTOM.y <= 0.0) {
 		CUSTOM.x = rand_from_seed(alt_seed) * 2.0 * PI;
-		TRANSFORM[3] = vec4(position, 1.0, 0.0);
+		TRANSFORM[3] = vec4(initial_position, 1.0, 0.0);
 		CUSTOM.w = 1.0;
 	}
 	
 	// Moving the strokes back to initial position after enough displacement to
 	// keep stroke distribution consistent.
-	if (displacement > 80.0 * (0.5 + 0.5 * rand_from_seed(alt_seed))) {
+	if (displacement > max_displacement_alowed * (0.5 + 0.5 * rand_from_seed(alt_seed))) {
 		CUSTOM.w = 0.0;
 	}
 	// Resetting strokes that has velocity below a certain threshold so that
 	// strokes does not get stuck in one place.
-	if (length(stroke_velocity) < velocity_cutoff) {
-		CUSTOM.w -= 0.02 * (1.0 + rand_from_seed(alt_seed));
+	if (length(stroke_velocity) < anti_clump_velocity && displacement > EPSILON) {
+		CUSTOM.w -= 0.005 * (1.0 + rand_from_seed(alt_seed));
 	}
 	// Controlling overall lifetime of stroke.
-	CUSTOM.w -= 0.005 * (1.0 + rand_from_seed(alt_seed));
+	if (displacement > 10.0) {
+//		CUSTOM.w -= 0.005 * (1.0 + rand_from_seed(alt_seed));
+	}
 	
 	// Control smooth alpha
 	float delta = 1.0 / float(respawn_blend_frames - 1);
@@ -262,11 +275,13 @@ viewport_path = NodePath("Compositor/Base")
 resource_local_to_scene = true
 shader = SubResource( 4 )
 shader_param/respawn_blend_frames = 32
-shader_param/velocity_cutoff = 0.0
+shader_param/velocity_cutoff = 0.005
+shader_param/anti_clump_velocity = 0.3
 shader_param/amount = 4274.0
 shader_param/scale = 0.15
 shader_param/scale_random_amount = null
 shader_param/emission_box_extents = Vector3( 512, 300, 1 )
+shader_param/max_displacement_alowed = 60.0
 shader_param/source = SubResource( 10 )
 shader_param/depth_motion = SubResource( 8 )
 shader_param/raw_position_data = SubResource( 29 )
