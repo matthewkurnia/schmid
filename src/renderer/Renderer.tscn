@@ -91,7 +91,6 @@ void fragment() {
 	vec3 source_color = texture(source, SCREEN_UV + 0.004 * vec2(cos(2.0 * PI * angle), sin(2.0 * PI * angle))).rgb;
 	vec3 pigment_color = texture(source, uv).rgb;
 	COLOR.rgb = mix(source_color, pigment_color, pigmentation);
-//	COLOR.rgb = vec3(0);
 	
 	// Handle alpha
 	COLOR.a = alpha * texture(stroke_1, UV).a;
@@ -519,7 +518,6 @@ usage = 0
 render_target_update_mode = 3
 
 [node name="AntiNoise" type="TextureRect" parent="StrokesContainer/Viewport"]
-visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 texture = SubResource( 21 )
