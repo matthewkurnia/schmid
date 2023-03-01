@@ -12,11 +12,13 @@ onready var depth_motion := $DepthMotion
 onready var base := $Base
 onready var cameras := [
 	$Base/Camera,
-	$DepthMotion/Camera
+	$DepthMotion/Camera,
+	$Buffered/Camera
 ]
 onready var viewports := [
-	depth_motion,
-	base
+	$DepthMotion,
+	$Base,
+	$Buffered
 ]
 
 
