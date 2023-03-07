@@ -1,0 +1,6 @@
+[gd_scene format=2]
+
+[node name="ButtonContainer" type="CenterContainer"]
+margin_right = 25.0
+margin_bottom = 40.0
+rect_min_size = Vector2( 25, 0 )

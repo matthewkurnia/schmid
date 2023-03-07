@@ -1,0 +1,6 @@
+[gd_scene format=2]
+
+[node name="Padding" type="Control"]
+margin_right = 15.0
+margin_bottom = 40.0
+rect_min_size = Vector2( 15, 0 )
