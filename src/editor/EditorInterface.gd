@@ -34,6 +34,6 @@ func on_action(action):
 		return
 	match action:
 		UNDO:
-			pass
+			canvas.undo()
 		REDO:
-			pass
+			canvas.redo()

@@ -18,12 +18,10 @@ func _ready():
 
 func on_mouse_entered():
 	handle_input = true
-	print(self.name + " ENTER!")
 
 
 func on_mouse_exited():
 	handle_input = false
-	print(self.name + " EXIT!")
 
 
 func _input(event):

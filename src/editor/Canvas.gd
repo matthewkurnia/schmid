@@ -2,6 +2,7 @@ extends Sprite
 
 
 const MAX_DISTANCE := 3.0
+const UNDO_REDO_LIMIT := 32
 
 var curr_mouse_position: Vector2
 var prev_mouse_position: Vector2
@@ -14,9 +15,12 @@ var canvas_scale := 1.0
 
 var cursor_wet := false
 
-var stroke_group: Node2D
-
 var brush_buffer := []
+
+var pre_image: Image
+var post_image: Image
+var undo_redo := BoundedUndoRedo.new(UNDO_REDO_LIMIT)
+var last_edited_texture: Texture
 
 
 func _ready():
@@ -34,6 +38,7 @@ func _ready():
 	Editor.distorsion_texture.create_from_image(image, 0);
 	self.texture = Editor.alignment_texture
 	# DEMO CODE END !!!
+	last_edited_texture = self.texture
 
 
 func _draw():
@@ -63,8 +68,7 @@ func handle_input(event):
 	
 	if event.is_action_pressed("paint") and not event.is_echo():
 		cursor_wet = true
-		stroke_group = Node2D.new()
-		self.add_child(stroke_group)
+		pre_image = self.texture.get_data()
 		return
 	
 	if not cursor_wet:
@@ -83,7 +87,44 @@ func handle_input(event):
 	
 	if event.is_action_released("paint"):
 		cursor_wet = false
-		stroke_group.queue_free()
+		post_image = self.texture.get_data()
+		commit_to_history()
+		last_edited_texture = self.texture
+
+
+func set_data_and_update_texture(image_data: Image, target_texture: Texture) -> void:
+	target_texture.set_data(image_data)
+	self.texture = target_texture
+
+
+func commit_to_history() -> void:
+	var action := Action.new(
+		self,
+		"set_data_and_update_texture",
+		[pre_image, self.texture],
+		[post_image, self.texture]
+	)
+	undo_redo.commit_action(action)
+
+
+func undo() -> void:
+	if cursor_wet:
+		return
+	var undo_successful := undo_redo.undo()
+	if undo_successful:
+		print("<<< undo")
+	else:
+		print("<<< nothing to undo")
+
+
+func redo() -> void:
+	if cursor_wet:
+		return
+	var redo_successful := undo_redo.redo()
+	if redo_successful:
+		print(">>> redo")
+	else:
+		print(">>> nothing to redo")
 
 
 func on_mode_selected(index: int) -> void:

@@ -1,10 +1,11 @@
 class_name BoundedUndoRedo
 
 
-var history := BoundedHistory.new()
+var history: BoundedHistory
 
 
-func _init():
+func _init(bound):
+	history = BoundedHistory.new(bound)
 	pass
 
 
