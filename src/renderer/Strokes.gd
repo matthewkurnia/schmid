@@ -41,11 +41,16 @@ func strokes_setup():
 	self.amount = config["amount"]
 	print("Strokes setup with config: ", config)
 	self.process_material.set_shader_param("amount", config["amount"])
+
+
+func set_emission_extents() -> void:
+	var viewport_size := get_viewport().size
+	var extents := viewport_size * 0.5
 	self.process_material.set_shader_param(
 		"emission_box_extents",
-		Vector3(config["width"] * 0.5, config["height"] * 0.5, 1.0)
+		Vector3(extents.x, extents.y, 1.0)
 	)
-	self.position = Vector2(config["width"] * 0.5, config["height"] * 0.5)
+	self.position = extents
 
 
 func _ready():

@@ -13,5 +13,4 @@ var textures := [
 	distorsion_texture
 ]
 
-
-
+var viewer: Control

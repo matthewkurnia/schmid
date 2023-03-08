@@ -2,7 +2,7 @@ extends ViewportContainer
 
 
 const SCENES = [
-	preload("res://src/test_scenes/TestBalls.tscn")
+	preload("res://src/editor/Viewer3D.tscn")
 ]
 
 var selected_scene_index := 0
