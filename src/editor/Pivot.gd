@@ -16,6 +16,10 @@ func _init():
 		Editor.viewer.input_handler = self
 
 
+func _unhandled_input(event):
+	handle_input(event)
+
+
 func handle_input(event):
 	if event.is_action_pressed("pan") and not event.is_echo():
 		pressed = true

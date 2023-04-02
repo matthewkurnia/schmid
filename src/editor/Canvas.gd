@@ -3,13 +3,17 @@ extends Sprite
 
 const MAX_DISTANCE := 3.0
 const UNDO_REDO_LIMIT := 32
+const ALIGNMENT_SMOOTHING := 5
+
+export var airbrush_texture: Texture
 
 var curr_mouse_position: Vector2
 var prev_mouse_position: Vector2
+var mouse_deltas: Array
 
-var brush_type = BrushType.CIRCLE
-var brush_size: float = 10
-var brush_color: Color = Color.black
+var brush_type = BrushType.AIRBRUSH
+var brush_size: float = 1
+var brush_color: Color = Color.white
 
 var canvas_scale := 1.0
 
@@ -22,22 +26,32 @@ var post_image: Image
 var undo_redo := BoundedUndoRedo.new(UNDO_REDO_LIMIT)
 var last_edited_texture: Texture
 
+var edit_mode
+
+var size: float
+var type: int
+var distorsion: float
+
 
 func _ready():
 	var size := get_viewport().size
-	# DEMO CODE BEGIN !!!
-	var image = Image.new()
+	Editor.size = size
+	var image := Image.new()
 	image.create(size.x, size.y, false, Image.FORMAT_RGBAH)
-	image.fill(Color.white)
-	Editor.alignment_texture.create_from_image(image, 0);
-	image.fill(Color.red)
-	Editor.size_texture.create_from_image(image, 0);
-	image.fill(Color.green)
-	Editor.type_texture.create_from_image(image, 0);
-	image.fill(Color.blue)
-	Editor.distorsion_texture.create_from_image(image, 0);
+	
+	image.fill(Color(0.5, 0.5, 0))
+	Editor.alignment_texture.create_from_image(image, 0)
+	
+	image.fill(Color.black)
+	Editor.size_texture.create_from_image(image, 0)
+	
+	image.fill(Color.black)
+	Editor.type_texture.create_from_image(image, 0)
+	
+	image.fill(Color.black)
+	Editor.distorsion_texture.create_from_image(image, 0)
+	
 	self.texture = Editor.alignment_texture
-	# DEMO CODE END !!!
 	last_edited_texture = self.texture
 
 
@@ -49,6 +63,10 @@ func _draw():
 			BrushType.SQUARE:
 				var extents := Vector2.ONE * brush_size
 				draw_rect(Rect2(location - extents, 2 * extents), brush_color)
+			BrushType.AIRBRUSH:
+				var extents := Vector2.ONE * brush_size
+				var rect := Rect2(location - extents, 2 * extents)
+				draw_texture_rect(airbrush_texture, rect, false, brush_color * Color(1, 1, 1, 0.2))
 
 
 func _process(delta):
@@ -69,6 +87,7 @@ func handle_input(event):
 	if event.is_action_pressed("paint") and not event.is_echo():
 		cursor_wet = true
 		pre_image = self.texture.get_data()
+		mouse_deltas = []
 		return
 	
 	if not cursor_wet:
@@ -77,6 +96,10 @@ func handle_input(event):
 	var displacement := prev_mouse_position.distance_to(curr_mouse_position)
 	var delta := curr_mouse_position - prev_mouse_position
 	
+	mouse_deltas.push_back(delta)
+	if (len(mouse_deltas) > ALIGNMENT_SMOOTHING):
+		mouse_deltas.pop_front()
+	
 	if cursor_wet and displacement > 0:
 		var n := int(displacement / MAX_DISTANCE)
 		if n > 0:
@@ -84,6 +107,21 @@ func handle_input(event):
 			for i in range(1, n + 1):
 				brush_buffer.append(prev_mouse_position + stride * i)
 		brush_buffer.append(curr_mouse_position)
+	
+	match edit_mode:
+		EditMode.ALIGNMENT:
+			var mean_delta := Vector2.ZERO
+			for d in mouse_deltas:
+				mean_delta += d
+			mean_delta /= max(len(mouse_deltas), 1)
+			var packed_delta = mean_delta.normalized() * Vector2(1, -1) * 0.5 + Vector2.ONE * 0.5
+			brush_color = Color(packed_delta.x, packed_delta.y, 0.0)
+		EditMode.SIZE:
+			brush_color = Color(size, size, size, 1)
+		EditMode.TYPE:
+			brush_color = BrushType.get_color(type)
+		EditMode.DISTORSION:
+			brush_color = Color(distorsion, distorsion, distorsion, 1)
 	
 	if event.is_action_released("paint"):
 		cursor_wet = false
@@ -127,9 +165,35 @@ func redo() -> void:
 		print(">>> nothing to redo")
 
 
-func on_mode_selected(index: int) -> void:
-	self.texture = Editor.textures[index]
+func on_mode_selected(mode: int) -> void:
+	edit_mode = mode
+	self.texture = Editor.textures[edit_mode]
+	match edit_mode:
+		EditMode.ALIGNMENT:
+			brush_type = BrushType.CIRCLE
+		EditMode.SIZE:
+			brush_type = BrushType.AIRBRUSH
+		EditMode.TYPE:
+			brush_type = BrushType.CIRCLE
+		EditMode.DISTORSION:
+			brush_type = BrushType.AIRBRUSH
 
 
 func on_scale_updated(s: float) -> void:
 	canvas_scale = s
+
+
+func set_brush_size(value: float) -> void:
+	self.brush_size = value
+
+
+func set_size(value: float) -> void:
+	size = value
+
+
+func set_type(value: int) -> void:
+	type = value
+
+
+func set_distorsion(value: float) -> void:
+	distorsion = value

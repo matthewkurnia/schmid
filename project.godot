@@ -37,8 +37,11 @@ config/icon="res://icon.png"
 
 [autoload]
 
-Editor="*res://src/editor/EditorSingleton.gd"
 BrushType="*res://src/editor/BrushType.gd"
+PigmentationMode="*res://src/editor/PigmentationMode.gd"
+AlignmentMode="*res://src/editor/AlignmentMode.gd"
+EditMode="*res://src/editor/EditMode.gd"
+Editor="*res://src/editor/EditorSingleton.gd"
 
 [gui]
 

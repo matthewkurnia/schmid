@@ -1,13 +1,18 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://src/editor/Pivot.gd" type="Script" id=1]
 [ext_resource path="res://assets/models/Suzanne/glTF/Suzanne.gltf" type="PackedScene" id=2]
+[ext_resource path="res://src/renderer/MagicGlasses.tscn" type="PackedScene" id=3]
+[ext_resource path="res://src/renderer/MagicGlasses.gd" type="Script" id=4]
+[ext_resource path="res://src/tests/buffered_material_test.tres" type="Material" id=5]
 
 [sub_resource type="ProceduralSky" id=1]
 
 [sub_resource type="Environment" id=2]
 background_mode = 2
 background_sky = SubResource( 1 )
+
+[sub_resource type="SphereMesh" id=3]
 
 [node name="Viewer3D" type="Spatial"]
 
@@ -18,6 +23,20 @@ script = ExtResource( 1 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4 )
 
 [node name="Suzanne" parent="." instance=ExtResource( 2 )]
+visible = false
+
+[node name="Suzanne" parent="Suzanne" index="0"]
+material_buffered = ExtResource( 5 )
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 2 )
+
+[node name="MagicGlasses" parent="." instance=ExtResource( 3 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.62151 )
+script = ExtResource( 4 )
+
+[node name="MeshInstance" type="MeshInstance" parent="."]
+material_buffered = ExtResource( 5 )
+mesh = SubResource( 3 )
+
+[editable path="Suzanne"]

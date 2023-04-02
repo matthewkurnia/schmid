@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://src/editor/PigmentationModeSelector.gd" type="Script" id=1]
+
+[node name="PigmentationModeSelector" type="HBoxContainer"]
+margin_right = 40.0
+margin_bottom = 40.0
+
+[node name="Label" type="Label" parent="."]
+margin_top = 13.0
+margin_right = 24.0
+margin_bottom = 27.0
+hint_tooltip = "Pigmentation Mode"
+mouse_filter = 1
+text = "PM:"
+
+[node name="OptionButton" type="OptionButton" parent="."]
+margin_left = 28.0
+margin_right = 57.0
+margin_bottom = 40.0
+script = ExtResource( 1 )
