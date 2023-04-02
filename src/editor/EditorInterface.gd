@@ -50,6 +50,9 @@ func _ready():
 	canvas.set_size(size_slider.value)
 	canvas.set_type(type_selector.selected)
 	canvas.set_distorsion(distorsion_slider.value)
+	
+	undo_button.connect("pressed", self, "on_action", [UNDO])
+	redo_button.connect("pressed", self, "on_action", [REDO])
 
 
 func _input(event):
