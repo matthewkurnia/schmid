@@ -2,43 +2,10 @@
 
 [ext_resource path="res://src/editor/CompositeTexture.gd" type="Script" id=1]
 [ext_resource path="res://icon.png" type="Texture" id=2]
-
-[sub_resource type="Shader" id=1]
-code = "shader_type canvas_item;
-
-const float PI = 3.14159;
-
-uniform sampler2D alignment_texture;
-uniform sampler2D size_texture;
-uniform sampler2D type_texture;
-uniform sampler2D distorsion_texture;
-
-uniform int pigmentation_mode;
-uniform int alignment_mode;
-
-void fragment() {
-	vec2 alignment = normalize(texture(alignment_texture, UV).xy - vec2(0.5));
-	float angle = fract(atan(alignment.y, alignment.x) / (2.0 * PI));
-	
-	int pm = pigmentation_mode << 7;
-	
-	vec3 encoded_type = texture(type_texture, UV).rgb;
-	int type = int(encoded_type.r) + (int(encoded_type.g) << 1) + (int(encoded_type.b) << 2);
-	type = type << 4;
-	
-	int distorsion = int(texture(distorsion_texture, UV).x * 15.0);
-	
-	int am = alignment_mode << 6;
-	
-	int size = int(texture(size_texture, UV).x * 63.0);
-	
-	COLOR.r = angle;
-	COLOR.g = float(pm + type + distorsion) / 255.0;
-	COLOR.b = float(am + size) / 255.0;
-}"
+[ext_resource path="res://src/shaders/CompositeTexture.gdshader" type="Shader" id=3]
 
 [sub_resource type="ShaderMaterial" id=2]
-shader = SubResource( 1 )
+shader = ExtResource( 3 )
 shader_param/pigmentation_mode = null
 shader_param/alignment_mode = null
 

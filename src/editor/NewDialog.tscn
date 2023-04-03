@@ -1,0 +1,88 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://src/editor/Padding.tscn" type="PackedScene" id=1]
+[ext_resource path="res://src/editor/NewDialog.gd" type="Script" id=2]
+
+[node name="NewDialog" type="WindowDialog"]
+margin_left = 49.0
+margin_top = 69.0
+margin_right = 439.0
+margin_bottom = 177.0
+window_title = "Create new brush buffer"
+resizable = true
+script = ExtResource( 2 )
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+margin_left = 56.0
+margin_top = 16.0
+margin_right = 334.0
+margin_bottom = 92.0
+
+[node name="WidthHeightContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+margin_right = 274.0
+margin_bottom = 24.0
+
+[node name="Width" type="Label" parent="CenterContainer/VBoxContainer/WidthHeightContainer"]
+margin_top = 5.0
+margin_right = 38.0
+margin_bottom = 19.0
+text = "Width"
+
+[node name="WidthSpinBox" type="SpinBox" parent="CenterContainer/VBoxContainer/WidthHeightContainer"]
+margin_left = 42.0
+margin_right = 116.0
+margin_bottom = 24.0
+min_value = 100.0
+max_value = 10000.0
+value = 200.0
+
+[node name="Padding1" parent="CenterContainer/VBoxContainer/WidthHeightContainer" instance=ExtResource( 1 )]
+margin_left = 120.0
+margin_right = 135.0
+margin_bottom = 24.0
+
+[node name="Height" type="Label" parent="CenterContainer/VBoxContainer/WidthHeightContainer"]
+margin_left = 139.0
+margin_top = 5.0
+margin_right = 177.0
+margin_bottom = 19.0
+text = "Height"
+
+[node name="HeightSpinBox" type="SpinBox" parent="CenterContainer/VBoxContainer/WidthHeightContainer"]
+margin_left = 181.0
+margin_right = 255.0
+margin_bottom = 24.0
+min_value = 100.0
+max_value = 10000.0
+value = 200.0
+
+[node name="Padding2" parent="CenterContainer/VBoxContainer/WidthHeightContainer" instance=ExtResource( 1 )]
+margin_left = 259.0
+margin_right = 274.0
+margin_bottom = 24.0
+
+[node name="SquareAspectRatioContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+margin_top = 28.0
+margin_right = 274.0
+margin_bottom = 52.0
+
+[node name="SquareAspectRatio" type="Label" parent="CenterContainer/VBoxContainer/SquareAspectRatioContainer"]
+margin_top = 5.0
+margin_right = 127.0
+margin_bottom = 19.0
+text = "Square Aspect Ratio"
+
+[node name="CheckBox" type="CheckBox" parent="CenterContainer/VBoxContainer/SquareAspectRatioContainer"]
+margin_left = 131.0
+margin_right = 155.0
+margin_bottom = 24.0
+
+[node name="Button" type="Button" parent="CenterContainer/VBoxContainer"]
+margin_top = 56.0
+margin_right = 274.0
+margin_bottom = 76.0
+text = "Create"

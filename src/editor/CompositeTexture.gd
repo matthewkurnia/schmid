@@ -5,11 +5,12 @@ onready var sprite := $Sprite
 
 
 func _ready():
-	self.size = Editor.size
-	# DEBUG CODE BEGIN
-	self.size = 200 * Vector2.ONE
-	print(self.size)
-	# DEBUG CODE END
+	Editor.connect("new_texture", self, "initialize")
+	Editor.connect("load_texture", self, "initialize")
+
+
+func initialize(width: float, height: float) -> void:
+	self.size = Vector2(width, height)
 	
 	var image := Image.new()
 	image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
@@ -20,3 +21,4 @@ func _ready():
 	sprite.texture = texture
 	
 	Editor.composite_material = sprite.material
+	Editor.composite_sprite = sprite

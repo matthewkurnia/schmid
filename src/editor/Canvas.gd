@@ -34,21 +34,20 @@ var distorsion: float
 
 
 func _ready():
-	var size := get_viewport().size
-	Editor.size = size
+	Editor.connect("new_texture", self, "initialize")
+
+
+func initialize(width: float, height: float) -> void:
+	Editor.size = Vector2(width, height)
 	var image := Image.new()
-	image.create(size.x, size.y, false, Image.FORMAT_RGBAH)
+	image.create(width, height, false, Image.FORMAT_RGBAH)
 	
-	image.fill(Color(0.5, 0.5, 0))
+	image.fill(Color(1, 0.5, 0))
 	Editor.alignment_texture.create_from_image(image, 0)
 	
 	image.fill(Color.black)
 	Editor.size_texture.create_from_image(image, 0)
-	
-	image.fill(Color.black)
 	Editor.type_texture.create_from_image(image, 0)
-	
-	image.fill(Color.black)
 	Editor.distorsion_texture.create_from_image(image, 0)
 	
 	self.texture = Editor.alignment_texture
@@ -177,6 +176,10 @@ func on_mode_selected(mode: int) -> void:
 			brush_type = BrushType.CIRCLE
 		EditMode.DISTORSION:
 			brush_type = BrushType.AIRBRUSH
+
+
+func on_load(width: float, height: float) -> void:
+	pass
 
 
 func on_scale_updated(s: float) -> void:

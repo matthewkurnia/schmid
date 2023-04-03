@@ -17,14 +17,21 @@ onready var viewport = $Viewport
 
 
 func _ready():
-	update_size()
+	Editor.connect("new_texture", self, "initialize")
+	Editor.connect("load_texture", self, "initialize")
 	if canvas:
 		self.connect("scale_updated", canvas, "on_scale_updated")
 
 
-func update_size() -> void:
-	print("Canvas size updated to " + str(self.rect_size))
-	inert_size = self.rect_size
+func initialize(width: float, height: float):
+	var size := Vector2(width, height)
+	update_viewport_size(size)
+	self.rect_size = size
+
+
+func update_viewport_size(size: Vector2) -> void:
+	print("Canvas size updated to " + str(size))
+	inert_size = size
 	viewport.size = inert_size
 
 
@@ -56,3 +63,7 @@ func apply_scale(multiplier: float) -> void:
 	self.rect_scale = scale * Vector2.ONE
 	self.rect_size = inert_size
 	emit_signal("scale_updated", scale)
+
+
+func on_load(width: float, height: float) -> void:
+	pass
