@@ -84,6 +84,7 @@ func handle_input(event):
 	curr_mouse_position = get_global_mouse_position() / canvas_scale
 	
 	if event.is_action_pressed("paint") and not event.is_echo():
+		Editor.dirty = true
 		cursor_wet = true
 		pre_image = self.texture.get_data()
 		mouse_deltas = []

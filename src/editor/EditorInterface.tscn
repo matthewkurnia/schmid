@@ -201,3 +201,12 @@ resizable = true
 mode = 0
 access = 2
 filters = PoolStringArray( "*.png; PNG images" )
+
+[node name="ConfirmationDialog" type="ConfirmationDialog" parent="."]
+visible = true
+margin_left = 154.0
+margin_top = 231.0
+margin_right = 354.0
+margin_bottom = 323.0
+dialog_text = "Current texture has unsaved changes, are you sure you want to discard them?"
+dialog_autowrap = true

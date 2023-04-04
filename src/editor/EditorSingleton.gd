@@ -35,6 +35,8 @@ var composite_sprite: Sprite
 
 var texture_path: String
 
+var dirty := false
+
 
 func _ready():
 	call_deferred("emit_signal", "new_texture", DEFAULT_WIDTH, DEFAULT_HEIGHT)
@@ -64,10 +66,13 @@ func set_alignment_mode(am: int) -> void:
 
 
 func new_texture(width: float, height: float) -> void:
+	texture_path = ""
 	emit_signal("new_texture", width, height)
 
 
 func save_texture(path: String) -> void:
+	texture_path = path
+	
 	var image = composite_sprite.get_viewport().get_texture().get_data()
 	image.flip_y()
 	image.save_png(path)
