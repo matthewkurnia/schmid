@@ -1,10 +1,12 @@
-[gd_scene load_steps=10 format=2]
+[gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://src/editor/TextureLoader.gd" type="Script" id=1]
 [ext_resource path="res://src/shaders/TypeExtractor.gdshader" type="Shader" id=2]
 [ext_resource path="res://src/shaders/DistorsionExtractor.tres" type="Shader" id=3]
 [ext_resource path="res://src/shaders/AlignmentExtractor.gdshader" type="Shader" id=4]
 [ext_resource path="res://src/shaders/SizeExtractor.gdshader" type="Shader" id=5]
+[ext_resource path="res://src/shaders/PigmentationModeExtractor.gdshader" type="Shader" id=6]
+[ext_resource path="res://src/shaders/AlignmentModeExtractor.gdshader" type="Shader" id=7]
 
 [sub_resource type="ShaderMaterial" id=1]
 shader = ExtResource( 4 )
@@ -18,11 +20,18 @@ shader = ExtResource( 2 )
 [sub_resource type="ShaderMaterial" id=4]
 shader = ExtResource( 3 )
 
+[sub_resource type="ShaderMaterial" id=5]
+shader = ExtResource( 6 )
+
+[sub_resource type="ShaderMaterial" id=6]
+shader = ExtResource( 7 )
+
 [node name="TextureLoader" type="Node"]
 script = ExtResource( 1 )
 
 [node name="Alignment" type="Viewport" parent="."]
 size = Vector2( 64, 64 )
+own_world = true
 handle_input_locally = false
 render_target_update_mode = 0
 
@@ -58,4 +67,24 @@ render_target_update_mode = 0
 
 [node name="Sprite" type="Sprite" parent="Distorsion"]
 material = SubResource( 4 )
+centered = false
+
+[node name="PigmentationMode" type="Viewport" parent="."]
+size = Vector2( 10, 10 )
+own_world = true
+handle_input_locally = false
+render_target_update_mode = 0
+
+[node name="Sprite" type="Sprite" parent="PigmentationMode"]
+material = SubResource( 5 )
+centered = false
+
+[node name="AlignmentMode" type="Viewport" parent="."]
+size = Vector2( 10, 10 )
+own_world = true
+handle_input_locally = false
+render_target_update_mode = 0
+
+[node name="Sprite" type="Sprite" parent="AlignmentMode"]
+material = SubResource( 6 )
 centered = false

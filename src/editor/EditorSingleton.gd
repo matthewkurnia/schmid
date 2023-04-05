@@ -15,16 +15,17 @@ var alignment_texture := ImageTexture.new()
 var size_texture := ImageTexture.new()
 var type_texture := ImageTexture.new()
 var distorsion_texture := ImageTexture.new()
+var pm_texture := ImageTexture.new()
+var am_texture := ImageTexture.new()
 
 var textures = [
 	alignment_texture,
 	size_texture,
 	type_texture,
-	distorsion_texture
+	distorsion_texture,
+	pm_texture,
+	am_texture
 ]
-
-var pigmentation_mode = PigmentationMode.TRANSPARENT setget set_pigmentation_mode
-var alignment_mode = AlignmentMode.RANDOM setget set_alignment_mode
 
 var viewer: Control
 
@@ -49,20 +50,10 @@ func set_composite_material(material: Material) -> void:
 	composite_material.set_shader_param("size_texture", size_texture)
 	composite_material.set_shader_param("type_texture", type_texture)
 	composite_material.set_shader_param("distorsion_texture", distorsion_texture)
-	composite_material.set_shader_param("pigmentation_mode", pigmentation_mode)
-	composite_material.set_shader_param("alignment_mode", alignment_mode)
+	composite_material.set_shader_param("pm_texture", pm_texture)
+	composite_material.set_shader_param("am_texture", am_texture)
 	
 	composite_material = material
-
-
-func set_pigmentation_mode(pm: int) -> void:
-	pigmentation_mode = pm
-	composite_material.set_shader_param("pigmentation_mode", pigmentation_mode)
-
-
-func set_alignment_mode(am: int) -> void:
-	alignment_mode = am
-	composite_material.set_shader_param("alignment_mode", alignment_mode)
 
 
 func new_texture(width: float, height: float) -> void:
@@ -88,13 +79,9 @@ func load_texture(path: String) -> void:
 	size_texture.create_from_image(images["size"])
 	type_texture.create_from_image(images["type"])
 	distorsion_texture.create_from_image(images["distorsion"])
+	pm_texture.create_from_image(images["pigmentation_mode"])
+	am_texture.create_from_image(images["alignment_mode"])
 	
 	var composite_image = images["composite"]
-	composite_image.lock()
-	var color = composite_image.get_pixel(0, 0)
-	set_pigmentation_mode(color.g8 >> 7)
-	set_alignment_mode(color.b8 >> 6)
-	composite_image.unlock()
-	
 	var size = composite_image.get_size()
 	emit_signal("load_texture", size.x, size.y)

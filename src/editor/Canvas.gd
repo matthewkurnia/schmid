@@ -31,6 +31,8 @@ var edit_mode
 var size: float
 var type: int
 var distorsion: float
+var pigmentation_mode: int
+var alignment_mode: int
 
 
 func _ready():
@@ -49,6 +51,10 @@ func initialize(width: float, height: float) -> void:
 	Editor.size_texture.create_from_image(image, 0)
 	Editor.type_texture.create_from_image(image, 0)
 	Editor.distorsion_texture.create_from_image(image, 0)
+	Editor.pm_texture.create_from_image(image, 0)
+	
+	image.fill(Color.red)
+	Editor.am_texture.create_from_image(image, 0)
 	
 	self.texture = Editor.alignment_texture
 	last_edited_texture = self.texture
@@ -108,6 +114,16 @@ func handle_input(event):
 				brush_buffer.append(prev_mouse_position + stride * i)
 		brush_buffer.append(curr_mouse_position)
 	
+	update_brush_color()
+	
+	if event.is_action_released("paint"):
+		cursor_wet = false
+		post_image = self.texture.get_data()
+		commit_to_history()
+		last_edited_texture = self.texture
+
+
+func update_brush_color() -> void:
 	match edit_mode:
 		EditMode.ALIGNMENT:
 			var mean_delta := Vector2.ZERO
@@ -122,12 +138,13 @@ func handle_input(event):
 			brush_color = BrushType.get_color(type)
 		EditMode.DISTORSION:
 			brush_color = Color(distorsion, distorsion, distorsion, 1)
-	
-	if event.is_action_released("paint"):
-		cursor_wet = false
-		post_image = self.texture.get_data()
-		commit_to_history()
-		last_edited_texture = self.texture
+		EditMode.PIGMENTATION_MODE:
+			brush_color = Color(pigmentation_mode, pigmentation_mode, pigmentation_mode, 1)
+		EditMode.ALIGNMENT_MODE:
+			var am_r = float(alignment_mode == 0)
+			var am_g = float(alignment_mode == 1)
+			var am_b = float(alignment_mode == 2)
+			brush_color = Color(am_r, am_g, am_b, 1)
 
 
 func set_data_and_update_texture(image_data: Image, target_texture: Texture) -> void:
@@ -177,6 +194,27 @@ func on_mode_selected(mode: int) -> void:
 			brush_type = BrushType.CIRCLE
 		EditMode.DISTORSION:
 			brush_type = BrushType.AIRBRUSH
+		EditMode.PIGMENTATION_MODE:
+			brush_type = BrushType.CIRCLE
+		EditMode.ALIGNMENT_MODE:
+			brush_type = BrushType.CIRCLE
+
+
+func fill() -> void:
+	print("FILL!")
+	
+	Editor.dirty = true
+	
+	pre_image = self.texture.get_data()
+	
+	update_brush_color()
+	
+	post_image = Image.new()
+	post_image.create(Editor.size.x, Editor.size.y, false, Image.FORMAT_RGBAH)
+	post_image.fill(brush_color)
+	
+	commit_to_history()
+	last_edited_texture = self.texture
 
 
 func on_load(width: float, height: float) -> void:
@@ -201,3 +239,11 @@ func set_type(value: int) -> void:
 
 func set_distorsion(value: float) -> void:
 	distorsion = value
+
+
+func set_pigmentation_mode(value: int) -> void:
+	pigmentation_mode = value
+
+
+func set_alignment_mode(value: int) -> void:
+	alignment_mode = value

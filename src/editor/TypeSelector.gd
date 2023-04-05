@@ -17,7 +17,6 @@ func _ready():
 	for i in range(8):
 		var image := Image.new()
 		image.create(16, 16, false, Image.FORMAT_RGBA8)
-		
 		image.fill(BrushType.get_color(i))
 		
 		var texture := ImageTexture.new()

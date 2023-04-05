@@ -6,8 +6,6 @@
 
 [sub_resource type="ShaderMaterial" id=2]
 shader = ExtResource( 3 )
-shader_param/pigmentation_mode = null
-shader_param/alignment_mode = null
 
 [node name="CompositeTexture" type="Viewport"]
 script = ExtResource( 1 )

@@ -27,4 +27,4 @@ func redo() -> bool:
 
 func commit_action(action: Action) -> void:
 	history.push(action)
-#	action.do()
+	action.do()

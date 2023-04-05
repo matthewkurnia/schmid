@@ -5,21 +5,27 @@ const IDENTIFIERS := [
 	"alignment",
 	"size",
 	"type",
-	"distorsion"
+	"distorsion",
+	"pigmentation_mode",
+	"alignment_mode"
 ]
 
 onready var viewports := [
 	$Alignment,
 	$Size,
 	$Type,
-	$Distorsion
+	$Distorsion,
+	$PigmentationMode,
+	$AlignmentMode
 ]
 
 onready var sprites := [
 	$Alignment/Sprite,
 	$Size/Sprite,
 	$Type/Sprite,
-	$Distorsion/Sprite
+	$Distorsion/Sprite,
+	$PigmentationMode/Sprite,
+	$AlignmentMode/Sprite
 ]
 
 
@@ -46,7 +52,7 @@ func load_images(path: String) -> Dictionary:
 	
 	var images := {"composite": image}
 	
-	for i in range(4):
+	for i in range(6):
 		var _image = viewports[i].get_texture().get_data()
 		_image.flip_y()
 		images[IDENTIFIERS[i]] = _image
