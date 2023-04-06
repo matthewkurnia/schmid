@@ -13,7 +13,8 @@ var panning := false
 var inert_size: Vector2
 
 onready var canvas = get_node_or_null(canvas_path)
-onready var viewport = $Viewport
+onready var editor_viewport = $EditorViewport
+onready var wireframe_viewport = $WireframeViewport
 
 
 func _ready():
@@ -32,7 +33,8 @@ func initialize(width: float, height: float):
 func update_viewport_size(size: Vector2) -> void:
 	print("Canvas size updated to " + str(size))
 	inert_size = size
-	viewport.size = inert_size
+	editor_viewport.size = inert_size
+	wireframe_viewport.size = inert_size
 
 
 func handle_input(event):

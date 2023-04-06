@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://src/editor/Wireframe.gd" type="Script" id=1]
+[ext_resource path="res://src/editor/WireframeMaterial.tres" type="Material" id=2]
+
+[node name="Wireframe" type="Spatial"]
+script = ExtResource( 1 )
+wireframe_material = ExtResource( 2 )
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.13497 )
+projection = 1
+current = true
+
+[node name="MeshParent" type="Spatial" parent="."]

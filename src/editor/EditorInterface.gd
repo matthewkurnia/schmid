@@ -12,6 +12,7 @@ enum {
 
 export var canvas_path: NodePath
 export var canvas_container_path: NodePath
+export var wireframe_material: Material
 
 onready var canvas = get_node_or_null(canvas_path)
 onready var canvas_container = get_node_or_null(canvas_container_path)
@@ -45,6 +46,9 @@ onready var distorsion_slider_container := $BottomPanel/HBoxContainer/Distorsion
 onready var am_selector_container := $BottomPanel/HBoxContainer/AMSelectorContainer
 onready var pm_selector_container := $BottomPanel/HBoxContainer/PMSelectorContainer
 
+onready var wireframe_color_picker := $WireframeControls/ColorPickerContainer/HBoxContainer/ColorPickerButton
+onready var wireframe_thickness_slider := $WireframeControls/ThicknessSliderContainer/HBoxContainer/HSlider
+
 
 func _ready():
 	mode_selection_button.connect("item_selected", self, "on_mode_selected")
@@ -53,6 +57,10 @@ func _ready():
 	
 	undo_button.connect("pressed", self, "on_action", [UNDO])
 	redo_button.connect("pressed", self, "on_action", [REDO])
+	
+	wireframe_color_picker.connect("color_changed", self, "change_wireframe_color")
+	wireframe_thickness_slider.connect("value_changed", self, "change_wireframe_thickness")
+	change_wireframe_thickness(wireframe_thickness_slider.value)
 	
 	if not canvas:
 		return
@@ -127,3 +135,11 @@ func on_canvas_override(target_dialog: WindowDialog) -> void:
 		confirmation_dialog.show()
 		return
 	target_dialog.popup()
+
+
+func change_wireframe_color(color: Color) -> void:
+	wireframe_material.set_shader_param("wire_color", color)
+
+
+func change_wireframe_thickness(thickness: float) -> void:
+	wireframe_material.set_shader_param("wire_width", thickness)

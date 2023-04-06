@@ -1,0 +1,12 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+
+[ext_resource path="res://src/shaders/Wireframe.gdshader" type="Shader" id=1]
+
+[resource]
+shader = ExtResource( 1 )
+shader_param/wire_color = Color( 0, 0, 0, 1 )
+shader_param/wire_width = 0.368
+shader_param/wire_smoothness = 0.01
+shader_param/capture_size = 1.0
+shader_param/unwrap_location = Vector3( 0, 0, 0 )
+shader_param/unwrap_scale = 1.0

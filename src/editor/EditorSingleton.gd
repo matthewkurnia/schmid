@@ -4,6 +4,7 @@ extends Node
 signal new_texture(width, height)
 signal save_texture()
 signal load_texture(width, height)
+signal viewed_mesh_updated(mesh)
 
 const DEFAULT_WIDTH := 256
 const DEFAULT_HEIGHT := 256
@@ -37,6 +38,8 @@ var composite_sprite: Sprite
 var texture_path: String
 
 var dirty := false
+
+var viewed_mesh: MeshInstance
 
 
 func _ready():
@@ -85,3 +88,8 @@ func load_texture(path: String) -> void:
 	var composite_image = images["composite"]
 	var size = composite_image.get_size()
 	emit_signal("load_texture", size.x, size.y)
+
+
+func set_viewed_mesh(mesh: MeshInstance) -> void:
+	viewed_mesh = mesh
+	emit_signal("viewed_mesh_updated", mesh)

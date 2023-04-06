@@ -22,3 +22,30 @@ handle_input_locally = false
 render_target_update_mode = 3
 
 [node name="Renderer" parent="ViewportContainer/Viewport" instance=ExtResource( 1 )]
+
+[node name="LoadDialog" type="FileDialog" parent="."]
+visible = true
+margin_left = 632.0
+margin_top = 149.0
+margin_right = 947.0
+margin_bottom = 458.0
+window_title = "Open a File"
+resizable = true
+mode = 0
+filters = PoolStringArray( "*.GLTF; GLTF files", "*.GLB; GLB files" )
+
+[node name="Menus" type="HBoxContainer" parent="."]
+anchor_right = 1.0
+margin_bottom = 20.0
+alignment = 2
+
+[node name="MeshSelector" type="OptionButton" parent="Menus"]
+margin_left = 949.0
+margin_right = 978.0
+margin_bottom = 20.0
+
+[node name="LoadButton" type="Button" parent="Menus"]
+margin_left = 982.0
+margin_right = 1024.0
+margin_bottom = 20.0
+text = "Load"

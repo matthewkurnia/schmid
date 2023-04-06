@@ -1,19 +1,19 @@
 extends Spatial
 
 
-const CAMERA_SCROLL_STRIDE := 1.0
+const CAMERA_SCROLL_STRIDE := 0.25
 const CAMERA_MIN_DISTANCE := 0.5
 const CAMERA_MAX_DISTANCE := 20.0
 
 var pressed := false
 var sensitivity := 0.01
+var input_origin: Node
 
 onready var camera = $Camera
 
 
-func _init():
-	if Editor.viewer:
-		Editor.viewer.input_handler = self
+func _ready():
+	input_origin.connect("input_received", self, "handle_input")
 
 
 func _unhandled_input(event):
