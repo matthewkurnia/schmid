@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode unshaded;
+render_mode unshaded, cull_disabled;
 
 uniform vec4 wire_color: hint_color = vec4(0.0, 0.0, 0.0, 1.0);
 uniform float wire_width: hint_range(0.0, 40.0) = 5.0;

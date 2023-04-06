@@ -56,6 +56,18 @@ func load_model(path: String) -> void:
 		print("ERROR: no mesh instances detected!")
 	
 	select_mesh(0)
+	
+	for m in meshes:
+		var mesh_aabb = m.mesh.get_aabb()
+		print(mesh_aabb.position)
+		print(mesh_aabb.size)
+		var position = mesh_aabb.position
+		var size = mesh_aabb.size
+		var scale = max(size.x, max(size.y, size.z))
+		m.scale = Vector3.ONE / scale
+		print(-(position + size * 0.5))
+		m.translation = -(position + size * 0.5) / scale
+		print(m.translation)
 
 
 func get_meshes(node: Node) -> Array:
