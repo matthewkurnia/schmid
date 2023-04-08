@@ -9,4 +9,3 @@ mouse_filter = 2
 
 [node name="CompositeTexture" parent="." instance=ExtResource( 1 )]
 handle_input_locally = false
-render_target_update_mode = 3

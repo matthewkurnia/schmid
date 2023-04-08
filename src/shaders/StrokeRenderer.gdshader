@@ -16,8 +16,11 @@ uniform int respawn_blend_frames: hint_range(2, 200, 1) = 4;
 
 uniform sampler2D source;
 uniform sampler2D depth_motion;
-uniform sampler2D buffered;
-uniform sampler2D stroke_1;
+uniform sampler2D config_buffer;
+uniform sampler2D debug_stroke;
+
+// stroke textures
+uniform sampler2DArray stroke_types;
 
 const float PI = 3.14159;
 const float STROKE_BIAS[] = {0.3};
@@ -35,7 +38,8 @@ vec3 hue_jitter(vec3 c) {
 void fragment() {
 	// Get values from particle shader
 	vec2 normalized_position = COLOR.xy;
-	float angle = COLOR.z;
+	float angle = fract(COLOR.z);
+	float rand_f = floor(COLOR.z) / 256.0;
 	float packed_alpha_scale = COLOR.w;
 	
 	// Unpack alpha and scale
@@ -77,14 +81,22 @@ void fragment() {
 	}
 	pigment_color = mix(pigment_color, core_color, (1.0 - smudge_amount));
 	
+	// Unpack stroke config
+	vec3 stroke_config = texture(config_buffer, normalized_position).rgb;
+	int green = int(stroke_config.g * 255.0);
+	int pigmentation_mode = green >> 7;
+	int brush_type = (green >> 4) & 7;
+	
 	// Combine the two samples
-	COLOR.rgb = mix(source_color, pigment_color, pigmentation);
+	COLOR.rgb = mix(source_color, pigment_color, float(pigmentation_mode));
 	
 	// Handle alpha
-	COLOR.a = alpha * texture(stroke_1, UV).a;
+	int index = brush_type * 4 + (int(rand_f * 4.0) % 4);
+	COLOR.a = texture(stroke_types, vec3(UV.x, UV.y, float(index))).a;
 	COLOR.a = grainify(texture(canvas_texture, SCREEN_UV).x, COLOR.a);
 	
 	if (debug_view) {
+//		COLOR.a = alpha * texture(debug_stroke, UV).a;
 		COLOR.rgb = vec3(normalized_position, packed_alpha_scale);
 //		COLOR.rgb = texture(buffered, SCREEN_UV).rgb;
 	}

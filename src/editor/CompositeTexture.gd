@@ -1,6 +1,8 @@
 extends Viewport
 
 
+export var decoder_shader: Shader
+
 onready var sprite := $Sprite
 
 
@@ -21,4 +23,10 @@ func initialize(width: float, height: float) -> void:
 	sprite.texture = texture
 	
 	Editor.composite_material = sprite.material
-	Editor.composite_sprite = sprite
+	Editor.composite_viewport = self
+	
+	var config_material := ShaderMaterial.new()
+	config_material.set_shader(decoder_shader)
+	config_material.set_shader_param("configuration_texture", self.get_texture())
+	Editor.config_material = config_material
+	

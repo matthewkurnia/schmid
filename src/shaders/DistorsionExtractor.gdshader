@@ -1,10 +1,7 @@
-[gd_resource type="Shader" format=2]
-
-[resource]
-code = "shader_type canvas_item;
+shader_type canvas_item;
 
 void fragment() {
 	int green = int(texture(TEXTURE, UV).g * 255.0);
 	int distorsion = (green & 15);
 	COLOR.rgb = vec3(float(distorsion) / 15.0);
-}"
+}

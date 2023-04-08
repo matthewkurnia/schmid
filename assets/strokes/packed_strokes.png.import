@@ -1,0 +1,25 @@
+[remap]
+
+importer="texture_array"
+type="TextureArray"
+path="res://.import/packed_strokes.png-e5556bc77e944c1045ab0203944c48fc.texarr"
+metadata={
+"vram_texture": false
+}
+
+[deps]
+
+source_file="res://assets/strokes/packed_strokes.png"
+dest_files=[ "res://.import/packed_strokes.png-e5556bc77e944c1045ab0203944c48fc.texarr" ]
+
+[params]
+
+compress/mode=0
+compress/no_bptc_if_rgb=false
+flags/repeat=0
+flags/filter=true
+flags/mipmaps=false
+flags/anisotropic=false
+flags/srgb=2
+slices/horizontal=32
+slices/vertical=1

@@ -33,7 +33,8 @@ var viewer: Control
 var size: Vector2
 
 var composite_material: Material setget set_composite_material
-var composite_sprite: Sprite
+var composite_viewport: Viewport
+var config_material: Material
 
 var texture_path: String
 
@@ -67,8 +68,7 @@ func new_texture(width: float, height: float) -> void:
 func save_texture(path: String) -> void:
 	texture_path = path
 	
-	var image = composite_sprite.get_viewport().get_texture().get_data()
-	image.flip_y()
+	var image = composite_viewport.get_texture().get_data()
 	image.save_png(path)
 
 

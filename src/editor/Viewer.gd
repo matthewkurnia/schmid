@@ -3,9 +3,10 @@ extends Control
 
 signal input_received(event)
 
-const Viewer3D = preload("res://src/editor/Viewer3D.tscn")
+const Viewer3D := preload("res://src/editor/Viewer3D.tscn")
+const SUZANNE_PATH := "res://assets/models/Suzanne/glTF/Suzanne.gltf"
 
-var viewer_3d
+var viewer_3d: Spatial
 var handle_input := false
 var meshes := []
 
@@ -38,6 +39,8 @@ func _ready():
 	compositor.change_scene_to(viewer_3d)
 	
 	mesh_selector.connect("item_selected", self, "select_mesh")
+	
+	call_deferred("load_model", SUZANNE_PATH)
 
 
 func load_model(path: String) -> void:
@@ -59,15 +62,12 @@ func load_model(path: String) -> void:
 	
 	for m in meshes:
 		var mesh_aabb = m.mesh.get_aabb()
-		print(mesh_aabb.position)
-		print(mesh_aabb.size)
 		var position = mesh_aabb.position
 		var size = mesh_aabb.size
 		var scale = max(size.x, max(size.y, size.z))
 		m.scale = Vector3.ONE / scale
-		print(-(position + size * 0.5))
 		m.translation = -(position + size * 0.5) / scale
-		print(m.translation)
+		m.material_buffered = Editor.config_material
 
 
 func get_meshes(node: Node) -> Array:

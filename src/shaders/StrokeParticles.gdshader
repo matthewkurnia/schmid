@@ -5,18 +5,25 @@ uniform int respawn_blend_frames: hint_range(2, 32, 1) = 4;
 uniform float velocity_cutoff: hint_range(0.0, 1.0) = 0.2;
 uniform float anti_clump_velocity: hint_range(0.0, 1.0) = 0.01;
 uniform int amount;
-uniform float scale = 1.0;
 uniform float scale_random_amount;
 uniform vec3 emission_box_extents;
 uniform float max_displacement_alowed = 80.0;
 
 uniform sampler2D source;
 uniform sampler2D depth_motion;
-uniform sampler2D buffered;
+uniform sampler2D config_buffer;
 uniform sampler2D raw_position_data;
+
+uniform float angle_jitter: hint_range(0.0, 1.0, 0.05);
+uniform float scale_minimum: hint_range(0.0, 1.0, 0.001);
+uniform float scale_maximum: hint_range(0.0, 1.0, 0.001);
+uniform float scale_jitter: hint_range(0.0, 1.0, 0.001);
 
 const float PI = 3.14159;
 const float EPSILON = 0.1;
+const int AM_RANDOM = 0;
+const int AM_ENCODED = 1;
+const int AM_TANGENTIAL = 2;
 
 float rand_from_seed(inout uint seed) {
 	int k;
@@ -53,6 +60,7 @@ uint hash(uint x) {
 // COLOR.a === scale
 void vertex() {
 	uint alt_seed = hash(uint(INDEX) + RANDOM_SEED);
+	float rand_f = rand_from_seed(alt_seed);
 	
 	vec2 normalized_position = texelFetch(raw_position_data, ivec2(INDEX, 0), 0).xy;
 	vec2 initial_position = (normalized_position - vec2(0.5)) * 2.0 * vec2(emission_box_extents.x, emission_box_extents.y);
@@ -60,21 +68,31 @@ void vertex() {
 	
 	normalized_position = (TRANSFORM[3].xy / emission_box_extents.xy) * 0.5 + 0.5;
 	
-	CUSTOM.x = rand_from_seed(alt_seed) * 2.0 * PI;
-	// DEMO CODE START!!!
-	vec3 brush_buffer = texture(buffered, normalized_position).rgb;
-	CUSTOM.x = brush_buffer.x * 2.0 * PI;
-	// DEMO CODE END!!!
+	// decode config buffer
+	vec3 stroke_config = texture(config_buffer, normalized_position).rgb;
+	float normalized_angle = stroke_config.x;
+	int blue = int(stroke_config.b * 255.0);
+	int alignment_mode = blue >> 6;
+	float size = float(alignment_mode & 63) / 63.0;
+	
+	// handle stroke angle
+	if (alignment_mode == AM_RANDOM) {
+		CUSTOM.x = rand_f * 2.0 * PI;
+	} else {
+		CUSTOM.x = (stroke_config.x + (rand_f - 0.5) * angle_jitter) * 2.0 * PI;
+	}
+	
+	// handle stroke size
+	float scale = mix(scale_minimum, scale_maximum, size) + (rand_f - 0.5) * scale_jitter;
 	
 	// set the transform
 	TRANSFORM[0] = vec4(cos(CUSTOM.x), -sin(CUSTOM.x), 0.0, 0.0);
 	TRANSFORM[1]= vec4(sin(CUSTOM.x), cos(CUSTOM.x), 0.0, 0.0);
 	TRANSFORM[2] = vec4(0.0, 0.0, 1.0, 0.0);
 	
-	float base_scale = scale;
-	TRANSFORM[0].xyz *= base_scale;
-	TRANSFORM[1].xyz *= base_scale;
-	TRANSFORM[2].xyz *= base_scale;
+	TRANSFORM[0].xyz *= scale;
+	TRANSFORM[1].xyz *= scale;
+	TRANSFORM[2].xyz *= scale;
 	
 	// To preserve precision, the motion vector is mulltiplied by 64.
 	// When decoding, we now multiply by 0.015625 (1/64) to reduce it to the correct size.
@@ -124,7 +142,7 @@ void vertex() {
 	COLOR = vec4(
 		normalized_position.x,
 		normalized_position.y,
-		CUSTOM.x,
+		CUSTOM.x + floor(256.0 * rand_f),
 		packed_alpha + packed_scale
 	);
 }
