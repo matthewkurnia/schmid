@@ -1,0 +1,20 @@
+[remap]
+
+importer="wavefront_obj"
+type="Mesh"
+path="res://.import/091_W_Aya_10K.obj-113e68a0f79dac9cb738f96c5d1c5f42.mesh"
+
+[deps]
+
+files=[ "res://.import/091_W_Aya_10K.obj-113e68a0f79dac9cb738f96c5d1c5f42.mesh" ]
+
+source_file="res://assets/models/Aya/091_W_Aya_10K.obj"
+dest_files=[ "res://.import/091_W_Aya_10K.obj-113e68a0f79dac9cb738f96c5d1c5f42.mesh", "res://.import/091_W_Aya_10K.obj-113e68a0f79dac9cb738f96c5d1c5f42.mesh" ]
+
+[params]
+
+generate_tangents=true
+scale_mesh=Vector3( 1, 1, 1 )
+offset_mesh=Vector3( 0, 0, 0 )
+octahedral_compression=true
+optimize_mesh_flags=4286

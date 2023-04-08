@@ -32,7 +32,7 @@ margin_bottom = 458.0
 window_title = "Open a File"
 resizable = true
 mode = 0
-filters = PoolStringArray( "*.GLTF; GLTF files", "*.GLB; GLB files" )
+filters = PoolStringArray( "*.GLTF; GLTF files", "*.GLB; GLB files", "*.OBJ; OBJ files" )
 
 [node name="Menus" type="HBoxContainer" parent="."]
 anchor_right = 1.0

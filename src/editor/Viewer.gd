@@ -44,8 +44,14 @@ func _ready():
 
 
 func load_model(path: String) -> void:
-	var packed_scene_gltf = PackedSceneGLTF.new()
-	var model = packed_scene_gltf.import_gltf_scene(path)
+	var model: Node
+	if path.to_lower().ends_with(".obj"):
+		var mesh := ObjParse.load_obj(path)
+		model = MeshInstance.new()
+		model.mesh = mesh
+	else:
+		var packed_scene_gltf = PackedSceneGLTF.new()
+		model = packed_scene_gltf.import_gltf_scene(path)
 	
 	viewer_3d.change_scene_to(model)
 	

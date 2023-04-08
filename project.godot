@@ -23,11 +23,17 @@ _global_script_classes=[ {
 "class": "BoundedUndoRedo",
 "language": "GDScript",
 "path": "res://src/editor/BoundedUndoRedo.gd"
+}, {
+"base": "Reference",
+"class": "ObjParse",
+"language": "GDScript",
+"path": "res://src/obj_parse/ObjParse.gd"
 } ]
 _global_script_class_icons={
 "Action": "",
 "BoundedHistory": "",
-"BoundedUndoRedo": ""
+"BoundedUndoRedo": "",
+"ObjParse": ""
 }
 
 [application]
