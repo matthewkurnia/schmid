@@ -1,0 +1,4 @@
+[submodule "gd-obj"]
+	path = gd-obj
+	url = https://github.com/matthewkurnia/gd-obj.git
+	branch = 3.x
