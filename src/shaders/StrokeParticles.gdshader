@@ -15,8 +15,8 @@ uniform sampler2D config_buffer;
 uniform sampler2D raw_position_data;
 
 uniform float angle_jitter: hint_range(0.0, 1.0, 0.05);
-uniform float scale_minimum: hint_range(0.0, 1.0, 0.001);
-uniform float scale_maximum: hint_range(0.0, 1.0, 0.001);
+uniform float min_scale: hint_range(0.0, 1.0, 0.001);
+uniform float max_scale: hint_range(0.0, 1.0, 0.001);
 uniform float scale_jitter: hint_range(0.0, 1.0, 0.001);
 
 const float PI = 3.14159;
@@ -83,7 +83,7 @@ void vertex() {
 	}
 	
 	// handle stroke size
-	float scale = mix(scale_minimum, scale_maximum, size) + (rand_f - 0.5) * scale_jitter;
+	float scale = mix(min_scale, max_scale, size) + (rand_f - 0.5) * scale_jitter;
 	
 	// set the transform
 	TRANSFORM[0] = vec4(cos(CUSTOM.x), -sin(CUSTOM.x), 0.0, 0.0);
