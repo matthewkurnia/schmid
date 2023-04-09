@@ -2,14 +2,14 @@ extends OptionButton
 
 
 const brush_type_names = [
-	"Brush 1",
-	"Brush 2",
-	"Brush 3",
-	"Brush 4",
-	"Brush 5",
-	"Brush 6",
-	"Brush 7",
-	"Brush 8",
+	"Rectangular",
+	"Grunge",
+	"Thin Line",
+	"Arc",
+	"Circular",
+	"Chaotic",
+	"TBD_1",
+	"TBD_2",
 ]
 
 
